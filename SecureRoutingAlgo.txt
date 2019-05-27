@@ -1,0 +1,56 @@
+process Node_i :
+
+    shared secret idstr_i;  // should be randomized and long enough
+    shared secret symkey_i;
+    shared secret interval; // time interval for which sth should be sent
+    
+    const self;
+    var currHead; // current cluster head
+    var nearNodes[];  // Nearby neighbour nodes, except head
+
+    func sendData(data) :
+        payload = encrypt(  // should provide semantic security
+            key = symkey_i, 
+            content = data ^ rand()
+        ); // if randomized IV implied in encrypt(), above rand() is unnecessary
+        
+        currTime = timestamp(); // timestamp should be different for each SEND
+        addr = hash(currTime ^ idstr_i);
+
+        SEND(
+            dest = nearNodes[randInt(nearNodes.size)],
+            content = currTime ^ addr ^ payload
+        );
+    
+    func recvPeerData(packet) : // although src is known, it should not be recorded
+        localPacketPool.append(packet);
+    
+    func fwdPeerData() :
+        ... 
+        // implementation same as sendData(localPacketPool) except that
+        // dest of SEND is to currHead
+    
+    MAINLOOP(self != currHead) :
+        on timer(interval) :
+            if (localDataQueue.size == 0)
+                sendData(HEARTBEAT);
+            else
+                sendData(localDataQueue);
+
+        on recvData(packet) :
+            recvPeerData(packet);
+            if (localPacketPool.size >= randInt(localPacketPool.fullSpace))
+                fwdPeerData();
+
+    MAINLOOP(self != currHead) :
+        on timer(interval) :
+            ...
+            // construct ownPacket as nested packet content in sendData() 
+            // for either HEARTBEAT or localDataQueue
+            localPacketPool.append(ownPacket);
+            
+        on recvData(packet) : // repacked packets
+            SEND(
+                dest = BASESTATION,
+                content = packet
+            );  // without further encryption
