@@ -3,6 +3,7 @@
         "atomic": "cpp",
         "thread": "cpp",
         "iostream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "stdlib.h": "c"
     }
 }

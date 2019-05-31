@@ -1,5 +1,5 @@
 CXX      := -c++
-CXXFLAGS := -pedantic-errors -Wall -Wextra -Werror -std=c++17
+CXXFLAGS := -pedantic-errors -Wall -Wextra -std=c++17
 LDFLAGS  := -L/usr/lib -lstdc++ -lm -lpthread
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/obj
@@ -21,7 +21,7 @@ $(APP_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) -o $(APP_DIR)/$(TARGET) $(OBJECTS)
 
-.PHONY: all build clean debug release
+.PHONY: all build clean debug release run
 
 build:
 	@mkdir -p $(APP_DIR)
@@ -36,3 +36,6 @@ release: all
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*
+
+run:
+	@$(APP_DIR)/$(TARGET)
